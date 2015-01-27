@@ -146,6 +146,9 @@ tmp_upload_dir = None
 errorlog = '-'
 loglevel = 'info'
 accesslog = '-'
+syslog_addr = "udp://syslogserver.example.com:514"
+syslog = True
+syslog_prefix = "myApp"
 
 #
 # Process naming

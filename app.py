@@ -2,6 +2,17 @@ import falcon
 import os
 import socket
 import json
+import logging
+from logstash_formatter import LogstashFormatter
+
+logger = logging.getLogger('cf-env')
+logger.setLevel(logging.INFO)
+handler = logging.handlers.SysLogHandler(address=(
+    'syslogserver.example.com', 514))
+formatter = LogstashFormatter()
+
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 class EnvResources:
@@ -11,11 +22,15 @@ class EnvResources:
         and stderr
         """
         resp.status = falcon.HTTP_200
-        msg = """Hey I'm running at: %s:%s\n
-And this is the VCAP_APPLICATION json: \n%s""" \
-            % (self.get_host(), self.get_port(), self.get_vcap_env())
+        msg = """Hey  I'm running at: %s:%s""" \
+            % (self.get_host(), self.get_port())
         resp.body = msg
-        print(msg)
+        env_vars = self.get_vcap_env()
+        logger.info("Test message",
+                    extra={"instance_index":
+                           env_vars['instance_index'],
+                           "port": env_vars['port'],
+                           "mem_limit": env_vars['limits']['mem']})
 
     def get_host(self):
         """
@@ -25,7 +40,7 @@ And this is the VCAP_APPLICATION json: \n%s""" \
         performance PLASE DO NOT DO THIS IN PROD!!!
         """
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("api.cfv2.dspdev.wmg.com", 80))
+        s.connect(("google.com", 80))
         return(s.getsockname()[0])
 
     def get_port(self):
@@ -42,10 +57,17 @@ And this is the VCAP_APPLICATION json: \n%s""" \
         This will return a dict from the json object that we can find in the
         ENV var VCAP_APPLICATION
         """
-        return json.dumps(json.loads(os.environ['VCAP_APPLICATION']),
-                          sort_keys=True, indent=4)
+        return json.loads(os.environ['VCAP_APPLICATION'])
 
 
 app = falcon.API()
 envs = EnvResources()
+
+# Here as you can see you will be able to edit from where this log is comming
+# for more information see:
+# https://github.com/exoscale/python-logstash-formatter#usage
+
+formatter.source_host = "cf-env-%s" % (
+    envs.get_vcap_env()['instance_index'])
+
 app.add_route('/', envs)

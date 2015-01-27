@@ -1,6 +1,7 @@
 Cython==0.21.2
 falcon==0.1.10
 gunicorn==19.1.1
+logstash-formatter==0.5.9
 python-mimeparse==0.1.4
 six==1.9.0
 wsgiref==0.1.2

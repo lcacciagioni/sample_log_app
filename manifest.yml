@@ -1,0 +1,8 @@
+---
+applications:
+- name: cf-env
+  memory: 256M
+  buildpack: https://github.com/cloudfoundry/python-buildpack.git
+  command: "gunicorn -c example_config.py app:app"
+  instances: 2
+  path: .
