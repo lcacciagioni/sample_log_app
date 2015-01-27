@@ -3,5 +3,7 @@ Sample app to log from CF to the outside world
 
 ## Running this app
 ```
-$ cf push cf-env -b https://github.com/cloudfoundry/python-buildpack.git -c "gunicorn -c example_config.py app:app"
+$ cf push"
 ```
+
+This command will use the default configs stored in the `manifest.yml` file to deploy this app in Clod Foundry
