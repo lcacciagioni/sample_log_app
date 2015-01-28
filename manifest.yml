@@ -6,3 +6,7 @@ applications:
   command: "gunicorn -c example_config.py app:app"
   instances: 2
   path: .
+  env:
+    SYSLOG_URL: syslogserver.example.com
+    SYSLOG_PORT: 514
+    SYSLOG_PROTO: 'udp'

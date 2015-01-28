@@ -7,8 +7,10 @@ from logstash_formatter import LogstashFormatter
 
 logger = logging.getLogger('cf-env')
 logger.setLevel(logging.INFO)
+ADDR = str(os.environ['SYSLOG_URL'])
+PORT = int(os.environ['SYSLOG_PORT'])
 handler = logging.handlers.SysLogHandler(address=(
-    'syslogserver.example.com', 514))
+    ADDR, PORT))
 formatter = LogstashFormatter()
 
 handler.setFormatter(formatter)
@@ -39,16 +41,17 @@ class EnvResources:
         a host to stablish a connection resulting in a very high cost for
         performance PLASE DO NOT DO THIS IN PROD!!!
         """
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("google.com", 80))
-        return(s.getsockname()[0])
+        # s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # s.connect(("google.com", 80))
+        # return(s.getsockname()[0])
+        return (os.environ['CF_INSTANCE_IP'])
 
     def get_port(self):
         """
         This function will get the port where your app is listening
         """
         try:
-            return os.environ['PORT']
+            return os.environ['CF_INSTANCE_PORT']
         except:
             return None
 

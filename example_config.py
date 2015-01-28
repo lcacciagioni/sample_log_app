@@ -1,5 +1,6 @@
 # Sample Gunicorn configuration file.
 import os
+# import multiprocessing
 #
 # Server socket
 #
@@ -18,7 +19,7 @@ import os
 #       range.
 #
 
-bind = "%s:%s" % ('0.0.0.0',os.environ['PORT'])
+bind = "%s:%s" % ('0.0.0.0', os.environ['PORT'])
 backlog = 2048
 
 #
@@ -69,7 +70,7 @@ backlog = 2048
 #       A positive integer. Generally set in the 1-5 seconds range.
 #
 
-workers = 1
+workers = 2
 worker_class = 'sync'
 worker_connections = 1000
 timeout = 30
@@ -125,11 +126,11 @@ spew = False
 #
 
 daemon = False
-pidfile = None
+pidfile = "%s/gunicorn.pid" % os.environ['TMPDIR']
 umask = 0
-user = 'vcap'
-group = 'vcap'
-tmp_upload_dir = None
+user = os.environ['USER']
+group = None
+tmp_upload_dir = os.environ['TMPDIR']
 
 #
 #   Logging
@@ -146,7 +147,9 @@ tmp_upload_dir = None
 errorlog = '-'
 loglevel = 'info'
 accesslog = '-'
-syslog_addr = "udp://syslogserver.example.com:514"
+syslog_addr = '%s://%s:%s' % (os.environ['SYSLOG_PROTO'],
+                              os.environ['SYSLOG_URL'],
+                              os.environ['SYSLOG_PORT'])
 syslog = True
 syslog_prefix = "myApp"
 
@@ -163,7 +166,7 @@ syslog_prefix = "myApp"
 #       A string or None to choose a default of something like 'gunicorn'.
 #
 
-proc_name = None
+proc_name = 'gunicorn'
 
 #
 # Server hooks
@@ -183,34 +186,42 @@ proc_name = None
 #       A callable that takes a server instance as the sole argument.
 #
 
+
 def post_fork(server, worker):
     server.log.info("Worker spawned (pid: %s)", worker.pid)
+
 
 def pre_fork(server, worker):
     pass
 
+
 def pre_exec(server):
     server.log.info("Forked child, re-executing.")
+
 
 def when_ready(server):
     server.log.info("Server is ready. Spawning workers")
 
+
 def worker_int(worker):
     worker.log.info("worker received INT or QUIT signal")
 
-    ## get traceback info
-    import threading, sys, traceback
+    # get traceback info
+    import threading
+    import sys
+    import traceback
     id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
     code = []
     for threadId, stack in sys._current_frames().items():
-        code.append("\n# Thread: %s(%d)" % (id2name.get(threadId,""),
-            threadId))
+        code.append("\n# Thread: %s(%d)" % (id2name.get(threadId, ""),
+                                            threadId))
         for filename, lineno, name, line in traceback.extract_stack(stack):
             code.append('File: "%s", line %d, in %s' % (filename,
-                lineno, name))
+                                                        lineno, name))
             if line:
                 code.append("  %s" % (line.strip()))
     worker.log.debug("\n".join(code))
+
 
 def worker_abort(worker):
     worker.log.info("worker received SIGABRT signal")
