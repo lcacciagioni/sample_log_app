@@ -1,5 +1,5 @@
 # sample_log_app
-Sample app to log from an app deployed in Cloud Foundry to any syslog server. This app try's to capture and show the real ip & port where your app is running.
+Sample app to log from an app deployed in Cloud Foundry to any syslog server. This app try's to capture and show the real ip & port where your app is running using [this](http://docs.run.pivotal.io/devguide/deploy-apps/environment-variable.html) env vars already provided in the warden containers by the DEA.
 
 > Getting the real IP & PORT (DEA IP & PORT) where your app is running is almost impossible before CF v196 so **be careful**.-
 
